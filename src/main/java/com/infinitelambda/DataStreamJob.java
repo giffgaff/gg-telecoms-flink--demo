@@ -27,7 +27,7 @@ public class DataStreamJob {
                 .setBootstrapServers("localhost:9092")
                 .setTopics("word-count-input")
                 .setGroupId("flink-wordcount")
-                .setStartingOffsets(OffsetsInitializer.earliest())
+                .setStartingOffsets(OffsetsInitializer.latest())
                 .setValueOnlyDeserializer(new SimpleStringSchema())
                 .build();
 
@@ -56,13 +56,20 @@ public class DataStreamJob {
     public static final class Tokenizer implements FlatMapFunction<String, Tuple2<String, Integer>> {
         @Override
         public void flatMap(String value, Collector<Tuple2<String, Integer>> out) {
-            String[] words = value.toLowerCase().split("\\W+");
+            String[] params = value.toLowerCase().split(" ");
+            String timestamp = params[0];
+            String count = params[1];
+            System.out.println(timestamp + " " + count);
+            Tuple2<String, Integer> tuple2 = new Tuple2<>(timestamp, Integer.parseInt(count));
+            System.out.println(tuple2);
+            out.collect(tuple2);
 
-            for (String word : words) {
-                if (word.length() > 0) {
-                    out.collect(new Tuple2<>(word, 1));
-                }
-            }
+
+//            for (String word : params) {
+//                if (word.length() > 0) {
+//                    out.collect(new Tuple2<>(word, 1));
+//                }
+//            }
         }
     }
 
